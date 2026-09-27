@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}情報一覧{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="card-head">
+    <h2>美容・健康の情報 <small class="muted">{{ total }} 件</small></h2>
+    <div class="row-actions">
+      <form method="post" action="/news/collect"><button type="submit" class="primary">今すぐ収集</button></form>
+      <form method="post" action="/news/mark-all-read"><button type="submit">すべて既読</button></form>
+    </div>
+  </div>
+  <form method="get" class="filters">
+    <input type="search" name="q" value="{{ q }}" placeholder="キーワードで絞り込み">
+    <select name="category">
+      <option value="">すべてのカテゴリ</option>
+      {% for c in categories %}<option value="{{ c }}" {{ 'selected' if category == c }}>{{ c }}</option>{% endfor %}
+    </select>
+    <select name="source_id">
+      <option value="">すべての情報源</option>
+      {% for s in sources %}<option value="{{ s.id }}" {{ 'selected' if source_id == s.id|string }}>{{ s.name }}</option>{% endfor %}
+    </select>
+    <select name="view">
+      <option value="all" {{ 'selected' if view == 'all' }}>すべて</option>
+      <option value="unread" {{ 'selected' if view == 'unread' }}>未読のみ</option>
+      <option value="favorite" {{ 'selected' if view == 'favorite' }}>お気に入り</option>
+    </select>
+    <button type="submit">絞り込む</button>
+  </form>
+</section>
+
+{% if rows %}
+<ul class="articles">
+  {% for a in rows %}
+  <li class="card article {{ 'read' if a.is_read }}">
+    <div class="article-meta">
+      <span class="tag">{{ a.category }}</span>
+      <span class="muted small">{{ a.source_name }} · {{ a.published_at or a.fetched_at }}</span>
+    </div>
+    <a class="article-title" href="/news/{{ a.id }}/open" target="_blank" rel="noopener">{{ a.title }}</a>
+    {% if a.summary and a.summary != a.title %}<p class="small muted">{{ a.summary }}</p>{% endif %}
+    <div class="row-actions">
+      <form method="post" action="/news/{{ a.id }}/favorite">
+        <button type="submit" class="small">{{ '★ お気に入り解除' if a.is_favorite else '☆ お気に入り' }}</button>
+      </form>
+      <form method="post" action="/news/{{ a.id }}/read">
+        <button type="submit" class="small">{{ '未読に戻す' if a.is_read else '既読にする' }}</button>
+      </form>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% if pages > 1 %}
+<nav class="pager">
+  {% set base = '?q=%s&category=%s&source_id=%s&view=%s'|format(q|urlencode, category|urlencode, source_id, view) %}
+  {% if page > 1 %}<a class="button" href="{{ base }}&page={{ page - 1 }}">← 前へ</a>{% endif %}
+  <span>{{ page }} / {{ pages }}</span>
+  {% if page < pages %}<a class="button" href="{{ base }}&page={{ page + 1 }}">次へ →</a>{% endif %}
+</nav>
+{% endif %}
+{% else %}
+<p class="card muted">該当する記事がありません。「今すぐ収集」を押すか、情報源を追加してください。</p>
+{% endif %}
+{% endblock %}

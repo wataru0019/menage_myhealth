@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}ダッシュボード{% endblock %}
+{% block content %}
+<section class="stats">
+  <div class="card stat">
+    <div class="stat-label">今週の運動時間</div>
+    <div class="stat-value">{{ week_total }}<small> / {{ goal }} 分</small></div>
+    <div class="progress"><div style="width: {{ progress }}%"></div></div>
+    <form method="post" action="/settings/goal" class="inline-form">
+      <label>週の目標 <input type="number" name="weekly_goal_min" min="1" value="{{ goal }}"> 分</label>
+      <button type="submit">変更</button>
+    </form>
+  </div>
+  <div class="card stat">
+    <div class="stat-label">連続記録</div>
+    <div class="stat-value">{{ streak }}<small> 日</small></div>
+    <p class="muted">{% if streak == 0 %}今日から始めましょう!{% else %}いい調子です 👏{% endif %}</p>
+  </div>
+  <div class="card stat">
+    <div class="stat-label">今週の内訳</div>
+    {% if by_category %}
+    <ul class="plain">
+      {% for c in by_category %}
+      <li><span class="tag tag-{{ loop.index }}">{{ c.category }}</span> {{ c.minutes }}分 / {{ c.count }}回</li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted">まだ記録がありません</p>{% endif %}
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-head">
+    <h2>直近14日間</h2>
+    <a href="/activities" class="button primary">＋ 運動を記録</a>
+  </div>
+  <div class="bars">
+    {% for d in daily %}
+    <div class="bar-col" title="{{ d.label }}: {{ d.minutes }}分">
+      <span class="bar-val">{{ d.minutes if d.minutes else '' }}</span>
+      <div class="bar {{ 'today' if d.date == today }}" style="height: {{ (d.minutes / max_minutes * 100)|round(1) }}%"></div>
+      <span class="bar-label">{{ d.label }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="two-col">
+  <section class="card">
+    <h2>最近の記録</h2>
+    {% if recent %}
+    <ul class="list">
+      {% for r in recent %}
+      <li><span class="muted">{{ r.date }}</span> <strong>{{ r.exercise }}</strong> {{ r.duration_min }}分 <span class="tag">{{ r.category }}</span></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted">運動記録ページから最初の記録を登録しましょう。</p>{% endif %}
+    {% if top_exercises %}
+    <h3>過去30日のよくやる運動</h3>
+    <ul class="list">
+      {% for t in top_exercises %}<li>{{ t.exercise }} <span class="muted">{{ t.count }}回・{{ t.minutes }}分</span></li>{% endfor %}
+    </ul>
+    {% endif %}
+  </section>
+  <section class="card">
+    <div class="card-head">
+      <h2>新着の美容・健康情報 <small class="muted">未読 {{ unread }} 件</small></h2>
+      <a href="/news?view=unread" class="button">すべて見る</a>
+    </div>
+    {% if news %}
+    <ul class="list">
+      {% for a in news %}
+      <li><a href="/news/{{ a.id }}/open" target="_blank" rel="noopener">{{ a.title }}</a><br>
+        <span class="muted small">{{ a.source_name }} · {{ a.published_at or a.fetched_at }}</span></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted">まだ記事がありません。情報一覧ページの「今すぐ収集」を押してください。</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}運動記録{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>運動を記録する</h2>
+  {% include "_activity_form.html" %}
+</section>
+
+<section class="card">
+  <div class="card-head">
+    <h2>
+      <a href="?month={{ prev_month }}&category={{ category }}" class="nav-arrow">◀</a>
+      {{ month.replace('-', '年') }}月の記録
+      <a href="?month={{ next_month }}&category={{ category }}" class="nav-arrow">▶</a>
+    </h2>
+    <form method="get" class="inline-form">
+      <input type="hidden" name="month" value="{{ month }}">
+      <select name="category" onchange="this.form.submit()">
+        <option value="">すべての目的</option>
+        {% for c in categories %}<option value="{{ c }}" {{ 'selected' if category == c }}>{{ c }}</option>{% endfor %}
+      </select>
+    </form>
+  </div>
+  <p class="muted">合計 {{ rows|length }} 回 · {{ total_minutes }} 分{% if total_calories %} · {{ total_calories }} kcal{% endif %}</p>
+  {% if rows %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>日付</th><th>目的</th><th>運動</th><th>時間</th><th>強度</th><th>kcal</th><th>メモ</th><th></th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.date }}</td>
+        <td><span class="tag">{{ r.category }}</span></td>
+        <td><strong>{{ r.exercise }}</strong></td>
+        <td>{{ r.duration_min }}分</td>
+        <td>{{ r.intensity }}</td>
+        <td>{{ r.calories if r.calories is not none else '' }}</td>
+        <td class="small">{{ r.notes }}</td>
+        <td class="row-actions">
+          <a href="/activities/{{ r.id }}/edit" class="button small">編集</a>
+          <form method="post" action="/activities/{{ r.id }}/delete" onsubmit="return confirm('削除しますか?')">
+            <button type="submit" class="small danger">削除</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}<p class="muted">この月の記録はありません。</p>{% endif %}
+</section>
+{% endblock %}

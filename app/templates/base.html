@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %} | MyHealth</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">🌿 MyHealth</a>
+    <nav>
+      {% set path = request.url.path %}
+      <a href="/" class="{{ 'active' if path == '/' }}">ダッシュボード</a>
+      <a href="/activities" class="{{ 'active' if path.startswith('/activities') }}">運動記録</a>
+      <a href="/news" class="{{ 'active' if path.startswith('/news') }}">情報一覧</a>
+      <a href="/sources" class="{{ 'active' if path.startswith('/sources') }}">情報源</a>
+    </nav>
+  </header>
+  <main>
+    {% if msg %}<p class="flash">{{ msg }}</p>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

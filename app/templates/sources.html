@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}情報源{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>情報源を追加</h2>
+  <p class="muted small">キーワードを入れると Google ニュースの検索結果を自動収集します。ブログやメディアの RSS/Atom URL を直接登録することもできます。</p>
+  <form method="post" action="/sources" class="form-grid">
+    <label>キーワード
+      <input type="text" name="keyword" placeholder="例: 腸活 ダイエット">
+    </label>
+    <label>または RSS の URL
+      <input type="url" name="url" placeholder="https://example.com/feed">
+    </label>
+    <label>表示名(任意)
+      <input type="text" name="name">
+    </label>
+    <label>カテゴリ
+      <select name="category">
+        {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+      </select>
+    </label>
+    <div class="wide actions"><button type="submit" class="primary">追加して収集</button></div>
+  </form>
+</section>
+
+<section class="card">
+  <div class="card-head">
+    <h2>登録済みの情報源</h2>
+    <form method="post" action="/news/collect"><button type="submit" class="primary">すべて収集</button></form>
+  </div>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>名前</th><th>カテゴリ</th><th>記事数</th><th>最終取得</th><th>状態</th><th></th></tr></thead>
+    <tbody>
+      {% for s in rows %}
+      <tr class="{{ '' if s.enabled else 'disabled' }}">
+        <td><strong>{{ s.name }}</strong><br><span class="small muted url">{{ s.url }}</span></td>
+        <td><span class="tag">{{ s.category }}</span></td>
+        <td>{{ s.article_count }}</td>
+        <td class="small">{{ s.last_fetched_at or '未取得' }}</td>
+        <td class="small">
+          {% if s.last_error %}<span class="error" title="{{ s.last_error }}">⚠ エラー</span>
+          {% elif s.last_fetched_at %}<span class="ok">✓ 正常</span>{% endif %}
+          {% if not s.enabled %}<br>停止中{% endif %}
+        </td>
+        <td class="row-actions">
+          <form method="post" action="/news/collect">
+            <input type="hidden" name="source_id" value="{{ s.id }}">
+            <button type="submit" class="small">収集</button>
+          </form>
+          <form method="post" action="/sources/{{ s.id }}/toggle">
+            <button type="submit" class="small">{{ '停止' if s.enabled else '再開' }}</button>
+          </form>
+          <form method="post" action="/sources/{{ s.id }}/delete" onsubmit="return confirm('この情報源と取得済み記事を削除しますか?')">
+            <button type="submit" class="small danger">削除</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% endblock %}

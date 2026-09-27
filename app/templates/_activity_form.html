@@ -1,0 +1,40 @@
+{% set e = edit %}
+<form method="post" action="{{ '/activities/%d' % e.id if e else '/activities' }}" class="form-grid">
+  <label>日付
+    <input type="date" name="activity_date" value="{{ e.date if e else today }}" required>
+  </label>
+  <label>目的
+    <select name="category">
+      {% for c in categories %}
+      <option value="{{ c }}" {{ 'selected' if e and e.category == c }}>{{ c }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>運動内容
+    <input type="text" name="exercise" list="exercise-list" placeholder="例: ヨガ、ウォーキング" value="{{ e.exercise if e else '' }}" required>
+    <datalist id="exercise-list">
+      {% for x in exercises %}<option value="{{ x }}">{% endfor %}
+      {% for x in ['ウォーキング', 'ジョギング', 'ヨガ', 'ピラティス', 'ストレッチ', '筋トレ', 'スクワット', '水泳', 'サイクリング', '顔ヨガ', 'リンパマッサージ'] %}<option value="{{ x }}">{% endfor %}
+    </datalist>
+  </label>
+  <label>時間(分)
+    <input type="number" name="duration_min" min="1" value="{{ e.duration_min if e else 30 }}" required>
+  </label>
+  <label>強度
+    <select name="intensity">
+      {% for i in intensities %}
+      <option value="{{ i }}" {{ 'selected' if (e and e.intensity == i) or (not e and i == '普通') }}>{{ i }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>消費kcal(任意)
+    <input type="number" name="calories" min="0" value="{{ e.calories if e and e.calories is not none else '' }}">
+  </label>
+  <label class="wide">メモ
+    <input type="text" name="notes" placeholder="体調や気づきなど" value="{{ e.notes if e else '' }}">
+  </label>
+  <div class="wide actions">
+    <button type="submit" class="primary">{{ '更新する' if e else '記録する' }}</button>
+    {% if e %}<a href="/activities?month={{ e.date[:7] }}" class="button">キャンセル</a>{% endif %}
+  </div>
+</form>
